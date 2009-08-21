@@ -105,14 +105,10 @@ int main (int argc, char **argv) {
 	}
 
 	if (settings.username == NULL) {
-                BarTermSetEcho(1);
-                BarTermSetBuffer(1);  
-	 	char nameBuf[100];
+		char nameBuf[100];
 		BarUiMsg (MSG_QUESTION, "Username: ");
-                BarReadlineStr (nameBuf, sizeof (nameBuf), 1, stdin);
+		BarReadlineStr (nameBuf, sizeof (nameBuf), 0, stdin);
 		settings.username = strdup (nameBuf);
-                BarTermSetBuffer(0);
-                BarTermSetEcho(0);
 	}
 	if (settings.password == NULL) {
 		char passBuf[100];
