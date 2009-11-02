@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+#define _BSD_SOURCE /* required by strdup() */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,7 +35,7 @@ THE SOFTWARE.
 #include "crypt.h"
 #include "config.h"
 
-#define PIANO_PROTOCOL_VERSION "24"
+#define PIANO_PROTOCOL_VERSION "25"
 #define PIANO_RPC_HOST "www.pandora.com"
 #define PIANO_RPC_PORT "80"
 #define PIANO_RPC_PATH "/radio/xmlrpc/v" PIANO_PROTOCOL_VERSION "?"
@@ -259,7 +261,7 @@ PianoReturn_t PianoGetPlaylist (PianoHandle_t *ph, const char *stationId,
 	char xmlSendBuf[PIANO_SEND_BUFFER_SIZE], *retStr;
 	PianoReturn_t ret;
 
-	/* FIXME: remove static numbers */
+	/* FIXME: remove static, "magic" numbers */
 	snprintf (xmlSendBuf, sizeof (xmlSendBuf), "<?xml version=\"1.0\"?>"
 			"<methodCall><methodName>playlist.getFragment</methodName>"
 			"<params><param><value><int>%li</int></value></param>"
@@ -269,11 +271,13 @@ PianoReturn_t PianoGetPlaylist (PianoHandle_t *ph, const char *stationId,
 			"<param><value><string></string></value></param>"
 			"<param><value><string></string></value></param>"
 			"<param><value><string>%s</string></value></param>"
+			"<param><value><string>0</string></value></param>"
+			"<param><value><string>0</string></value></param>"
 			"</params></methodCall>", time (NULL), ph->user.authToken,
 			stationId, PianoAudioFormatToString (format));
 	snprintf (ph->waith.path, sizeof (ph->waith.path), PIANO_RPC_PATH
 			"rid=%s&lid=%s&method=getFragment&arg1=%s&arg2=0"
-			"&arg3=&arg4=&arg5=%s", ph->routeId,
+			"&arg3=&arg4=&arg5=%s&arg6=0&arg7=0", ph->routeId,
 			ph->user.listenerId, stationId,
 			PianoAudioFormatToString (format));
 
