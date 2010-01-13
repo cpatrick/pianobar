@@ -438,7 +438,11 @@ void BarUiStartEventCmd (const BarSettings_t *settings, const char *type,
 		/* parent */
 		int status;
 		close (pipeFd[0]);
-		write (pipeFd[1], pipeBuf, strlen (pipeBuf));
+		ssize_t writeRes = write(pipeFd[1], pipeBuf, strlen (pipeBuf));
+                if( writeRes == -1 )
+                  {
+                  BarUiMsg(MSG_ERR,"Write to eventcmd pipe failed.");
+                  }
 		close (pipeFd[1]);
 		/* wait to get rid of the zombie */
 		waitpid (chld, &status, 0);
