@@ -31,7 +31,7 @@ THE SOFTWARE.
 #include "piano.h"
 #include "crypt.h"
 #include "config.h"
-#include "main.h"
+#include "piano_private.h"
 
 static void PianoXmlStructParser (const ezxml_t,
 		void (*callback) (const char *, const ezxml_t, void *), void *);
@@ -240,7 +240,10 @@ static void PianoXmlParsePlaylistCb (const char *key, const ezxml_t value,
 		char *urlTail = NULL,
 				*urlTailCrypted = &valueStr[valueStrN - urlTailN];
 
-		if ((urlTail = PianoDecryptString (urlTailCrypted)) != NULL) {
+		/* don't try to decrypt if string is too short (=> invalid memory
+		 * reads/writes) */
+		if (valueStrN > urlTailN &&
+				(urlTail = PianoDecryptString (urlTailCrypted)) != NULL) {
 			if ((song->audioUrl = calloc (valueStrN + 1,
 					sizeof (*song->audioUrl))) != NULL) {
 				memcpy (song->audioUrl, valueStr, valueStrN - urlTailN);
@@ -484,8 +487,10 @@ PianoReturn_t PianoXmlParseAddSeed (PianoHandle_t *ph, char *xml,
 /*	parses playlist; used when searching too
  *	@param piano handle
  *	@param xml document
+ *	@param return: playlist
  */
-PianoReturn_t PianoXmlParsePlaylist (PianoHandle_t *ph, char *xml) {
+PianoReturn_t PianoXmlParsePlaylist (PianoHandle_t *ph, char *xml,
+		PianoSong_t **retPlaylist) {
 	ezxml_t xmlDoc, dataNode;
 	PianoReturn_t ret;
 
@@ -508,10 +513,10 @@ PianoReturn_t PianoXmlParsePlaylist (PianoHandle_t *ph, char *xml) {
 		PianoXmlStructParser (ezxml_child (dataNode, "struct"),
 				PianoXmlParsePlaylistCb, tmpSong);
 		/* begin linked list or append */
-		if (ph->playlist == NULL) {
-			ph->playlist = tmpSong;
+		if (*retPlaylist == NULL) {
+			*retPlaylist = tmpSong;
 		} else {
-			PianoSong_t *curSong = ph->playlist;
+			PianoSong_t *curSong = *retPlaylist;
 			while (curSong->next != NULL) {
 				curSong = curSong->next;
 			}
