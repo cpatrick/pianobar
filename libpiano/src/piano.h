@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2008-2009
+Copyright (c) 2008-2010
 	Lars-Dominik Braun <PromyLOPh@lavabit.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -104,7 +104,7 @@ typedef enum {PIANO_RET_OK, PIANO_RET_ERR, PIANO_RET_XML_INVALID,
 		PIANO_RET_PROTOCOL_INCOMPATIBLE, PIANO_RET_READONLY_MODE,
 		PIANO_RET_STATION_CODE_INVALID, PIANO_RET_IP_REJECTED,
 		PIANO_RET_STATION_NONEXISTENT, PIANO_RET_OUT_OF_MEMORY,
-		PIANO_RET_OUT_OF_SYNC} PianoReturn_t;
+		PIANO_RET_OUT_OF_SYNC, PIANO_RET_PLAYLIST_END} PianoReturn_t;
 
 void PianoInit (PianoHandle_t *);
 void PianoDestroy (PianoHandle_t *);

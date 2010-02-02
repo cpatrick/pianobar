@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2008-2009
+Copyright (c) 2008-2010
 	Lars-Dominik Braun <PromyLOPh@lavabit.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,7 @@ THE SOFTWARE.
 #include "crypt.h"
 #include "config.h"
 
-#define PIANO_PROTOCOL_VERSION "25"
+#define PIANO_PROTOCOL_VERSION "26"
 #define PIANO_RPC_HOST "www.pandora.com"
 #define PIANO_RPC_PORT "80"
 #define PIANO_RPC_PATH "/radio/xmlrpc/v" PIANO_PROTOCOL_VERSION "?"
@@ -182,8 +182,6 @@ void PianoDestroy (PianoHandle_t *ph) {
  *	@param piano handle
  *	@param username (utf-8 encoded)
  *	@param password (plaintext, utf-8 encoded)
- *	@param use ssl when logging in (1 = on, 0 = off), note that the password
- *			is not hashed and will be sent as plain-text!
  */
 PianoReturn_t PianoConnect (PianoHandle_t *ph, const char *user,
 		const char *password) {
@@ -389,7 +387,6 @@ static PianoReturn_t PianoAddFeedback (PianoHandle_t *ph, const char *stationId,
  *	@param piano handle
  *	@param change this stations name
  *	@param new name
- *	@return
  */
 PianoReturn_t PianoRenameStation (PianoHandle_t *ph, PianoStation_t *station,
 		const char *newName) {
@@ -556,7 +553,6 @@ PianoReturn_t PianoCreateStation (PianoHandle_t *ph, const char *type,
 /*	add more music to existing station; multithreaded apps beware! this alters
  *	station data, don't forget to lock the station pointer you passed to this
  *	function
- *	@public yes
  *	@param piano handle
  *	@param add music to this station
  *	@param music id; can be obtained with PianoSearchMusic ()
@@ -591,7 +587,6 @@ PianoReturn_t PianoStationAddMusic (PianoHandle_t *ph,
 /*	ban a song temporary (for one month)
  *	@param piano handle
  *	@param song to be banned
- *	@return _OK or error
  */
 PianoReturn_t PianoSongTired (PianoHandle_t *ph, const PianoSong_t *song) {
 	char xmlSendBuf[PIANO_SEND_BUFFER_SIZE], *retStr;
@@ -620,7 +615,6 @@ PianoReturn_t PianoSongTired (PianoHandle_t *ph, const PianoSong_t *song) {
 
 /*	set stations use by quickmix
  *	@param piano handle
- *	@return _OK or error
  */
 PianoReturn_t PianoSetQuickmix (PianoHandle_t *ph) {
 	char xmlSendBuf[PIANO_SEND_BUFFER_SIZE], valueBuf[1000], urlArgBuf[1000],
@@ -691,7 +685,6 @@ PianoStation_t *PianoFindStationById (PianoStation_t *stations,
 
 /*	receive genre stations
  *	@param piano handle
- *	@return _OK or error
  */
 PianoReturn_t PianoGetGenreStations (PianoHandle_t *ph) {
 	char *retStr;
@@ -713,7 +706,6 @@ PianoReturn_t PianoGetGenreStations (PianoHandle_t *ph) {
  *	stations
  *	@param piano handle
  *	@param station to transform
- *	@return _OK or error
  */
 PianoReturn_t PianoTransformShared (PianoHandle_t *ph,
 		PianoStation_t *station) {
@@ -750,7 +742,6 @@ PianoReturn_t PianoTransformShared (PianoHandle_t *ph,
  *	@param piano handle
  *	@param song (from playlist)
  *	@param return allocated string; you have to free it yourself
- *	@return _OK or error
  */
 PianoReturn_t PianoExplain (PianoHandle_t *ph, const PianoSong_t *song,
 		char **retExplain) {
@@ -874,6 +865,10 @@ const char *PianoErrorToStr (PianoReturn_t ret) {
 
 		case PIANO_RET_OUT_OF_SYNC:
 			return "Out of sync. Please correct your system's time.";
+			break;
+
+		case PIANO_RET_PLAYLIST_END:
+			return "Playlist end.";
 			break;
 
 		default:

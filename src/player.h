@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2008-2009
+Copyright (c) 2008-2010
 	Lars-Dominik Braun <PromyLOPh@lavabit.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -84,6 +84,7 @@ struct audioPlayer {
 
 	/* audio out */
 	ao_device *audioOutDevice;
+	unsigned char aoError;
 
 	WaitressHandle_t waith;
 

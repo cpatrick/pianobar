@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2008-2009
+Copyright (c) 2008-2010
 	Lars-Dominik Braun <PromyLOPh@lavabit.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -83,6 +83,8 @@ static void PianoXmlIsFaultCb (const char *key, const ezxml_t value,
 						*ret = PIANO_RET_STATION_NONEXISTENT;
 					} else if (strcmp ("OUT_OF_SYNC", matchStart) == 0) {
 						*ret = PIANO_RET_OUT_OF_SYNC;
+					} else if (strcmp ("PLAYLIST_END", matchStart) == 0) {
+						*ret = PIANO_RET_PLAYLIST_END;
 					} else {
 						*ret = PIANO_RET_ERR;
 						printf (PACKAGE ": Unknown error %s in %s\n",
