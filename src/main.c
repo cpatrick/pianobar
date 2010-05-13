@@ -74,8 +74,6 @@ int main (int argc, char **argv) {
 	/* terminal attributes _before_ we started messing around with ~ECHO */
 	struct termios termOrig;
 
-	BarUiMsg (MSG_NONE, "Welcome to " PACKAGE "!\n");
-
 	/* save terminal attributes, before disabling echoing */
 	BarTermSave (&termOrig);
 
@@ -91,6 +89,9 @@ int main (int argc, char **argv) {
 
 	BarSettingsInit (&settings);
 	BarSettingsRead (&settings);
+
+	BarUiMsg (MSG_NONE, "Welcome to " PACKAGE "! Press %c for a list of commands.\n",
+			settings.keys[BAR_KS_HELP]);
 
 	/* init fds */
 	FD_ZERO(&readSet);
@@ -122,8 +123,15 @@ int main (int argc, char **argv) {
 		settings.password = strdup (passBuf);
 	}
 
-	/* setup control connection */
-	if (settings.controlProxy != NULL) {
+	/* set up proxy (control proxy for non-us citizen or global proxy for poor
+	 * firewalled fellows) */
+	if (settings.proxy != NULL && strlen (settings.proxy) > 0) {
+		char tmpPath[2];
+		WaitressSplitUrl (settings.proxy, waith.proxyHost,
+				sizeof (waith.proxyHost), waith.proxyPort,
+				sizeof (waith.proxyPort), tmpPath, sizeof (tmpPath));
+	} else if (settings.controlProxy != NULL) {
+		/* global proxy overrides control proxy */
 		char tmpPath[2];
 		WaitressSplitUrl (settings.controlProxy, waith.proxyHost,
 				sizeof (waith.proxyHost), waith.proxyPort,
@@ -265,6 +273,17 @@ int main (int argc, char **argv) {
 
 						WaitressInit (&player.waith);
 						WaitressSetUrl (&player.waith, playlist->audioUrl);
+
+						/* set up global proxy, player is NULLed on songfinish */
+						if (settings.proxy != NULL) {
+							char tmpPath[2];
+							WaitressSplitUrl (settings.proxy,
+									player.waith.proxyHost,
+									sizeof (player.waith.proxyHost),
+									player.waith.proxyPort,
+									sizeof (player.waith.proxyPort), tmpPath,
+									sizeof (tmpPath));
+						}
 
 						player.gain = playlist->fileGain;
 						player.audioFormat = playlist->audioFormat;
