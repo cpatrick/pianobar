@@ -1,7 +1,6 @@
 INCLUDE (CheckFunctionExists)
 INCLUDE (CheckLibraryExists)
 
-set (CMAKE_C_FLAGS -Wall)
 set (EXTRA_LIBS "")
 
 # required on sunos
