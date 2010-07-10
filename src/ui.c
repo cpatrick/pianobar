@@ -239,7 +239,7 @@ PianoStation_t *BarUiSelectStation (PianoHandle_t *ph, const char *prompt,
 		free (sortedStations);
 		return NULL;
 	}
-	if (input < stationCount) {
+	if ((size_t)input < stationCount) {
 		retStation = sortedStations[input];
 	}
 	free (sortedStations);

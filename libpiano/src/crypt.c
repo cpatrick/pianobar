@@ -140,7 +140,7 @@ unsigned char *PianoEncryptString (const unsigned char *strInput) {
 		/* encryption blocks */
 		uint32_t f, lrExchange;
 		register uint32_t l, r;
-		int i;
+		unsigned int i;
 
 		l = byteswap32 (*blockPtr);
 		r = byteswap32 (*(blockPtr+1));

@@ -246,7 +246,7 @@ static void PianoXmlParsePlaylistCb (const char *key, const ezxml_t value,
 
 		/* don't try to decrypt if string is too short (=> invalid memory
 		 * reads/writes) */
-		if (valueStrN > urlTailN &&
+		if (valueStrN > (size_t) urlTailN &&
 				(urlTail = PianoDecryptString (urlTailCrypted)) != NULL) {
 			if ((song->audioUrl = calloc (valueStrN + 1,
 					sizeof (*song->audioUrl))) != NULL) {
@@ -472,8 +472,7 @@ PianoReturn_t PianoXmlParseCreateStation (PianoHandle_t *ph, char *xml) {
  *	@param xml document
  *	@param update this station
  */
-PianoReturn_t PianoXmlParseAddSeed (PianoHandle_t *ph, char *xml,
-		PianoStation_t *station) {
+PianoReturn_t PianoXmlParseAddSeed (char *xml, PianoStation_t *station) {
 	ezxml_t xmlDoc, dataNode;
 	PianoReturn_t ret;
 
@@ -495,8 +494,7 @@ PianoReturn_t PianoXmlParseAddSeed (PianoHandle_t *ph, char *xml,
  *	@param xml document
  *	@param return: playlist
  */
-PianoReturn_t PianoXmlParsePlaylist (PianoHandle_t *ph, char *xml,
-		PianoSong_t **retPlaylist) {
+PianoReturn_t PianoXmlParsePlaylist ( char *xml, PianoSong_t **retPlaylist ) {
 	ezxml_t xmlDoc, dataNode;
 	PianoReturn_t ret;
 

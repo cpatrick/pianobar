@@ -52,7 +52,7 @@ THE SOFTWARE.
 #include "ui_act.h"
 #include "ui_readline.h"
 
-int main (int argc, char **argv) {
+int main () {
 	/* handles */
 	PianoHandle_t ph;
 	WaitressHandle_t waith;
@@ -68,7 +68,8 @@ int main (int argc, char **argv) {
 	char ctlPath[1024];
 	FILE *ctlFd = NULL;
 	struct timeval selectTimeout;
-	int maxFd, selectFds[2];
+	int maxFd;
+        int selectFds[2] = {0,0};
 	fd_set readSet, readSetCopy;
 	char buf = '\0';
 	/* terminal attributes _before_ we started messing around with ~ECHO */

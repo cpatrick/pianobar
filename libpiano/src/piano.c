@@ -736,8 +736,8 @@ PianoReturn_t PianoResponse (PianoHandle_t *ph, PianoRequest_t *req) {
 			assert (reqData != NULL);
 
 			reqData->retPlaylist = NULL;
-			ret = PianoXmlParsePlaylist (ph, req->responseData,
-					&reqData->retPlaylist);
+			ret = PianoXmlParsePlaylist ( req->responseData,
+                                                      &reqData->retPlaylist );
 			break;
 		}
 
@@ -846,7 +846,8 @@ PianoReturn_t PianoResponse (PianoHandle_t *ph, PianoRequest_t *req) {
 			assert (reqData->station != NULL);
 
 			/* FIXME: update station data instead of replacing them */
-			ret = PianoXmlParseAddSeed (ph, req->responseData, reqData->station);
+			ret = PianoXmlParseAddSeed( req->responseData, 
+                                                    reqData->station );
 			break;
 		}
 

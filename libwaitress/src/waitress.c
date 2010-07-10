@@ -82,7 +82,7 @@ char *WaitressUrlEncode (const char *in) {
 	const char *inPos = in;
 	char *outPos = out;
 
-	while (inPos - in < inLen) {
+	while ( (size_t)(inPos - in) < inLen) {
 		if (!isalnum (*inPos) && *inPos != '_' && *inPos != '-' && *inPos != '.') {
 			*outPos++ = '%';
 			snprintf (outPos, 3, "%02x", *inPos & 0xff);
@@ -125,7 +125,7 @@ char WaitressSplitUrl (const char *url, char *retHost, size_t retHostSize,
 
 		/* find host */
 		while (*urlPos != '\0' && *urlPos != ':' && *urlPos != '/' &&
-				urlPos - lastPos < retHostSize-1) {
+                       (size_t) (urlPos - lastPos) < retHostSize-1) {
 			*retHost++ = *urlPos++;
 		}
 		lastPos = urlPos;
@@ -136,7 +136,7 @@ char WaitressSplitUrl (const char *url, char *retHost, size_t retHostSize,
 			++urlPos;
 			++lastPos;
 			while (*urlPos != '\0' && *urlPos != '/' &&
-					urlPos - lastPos < retPortSize-1) {
+			       (size_t) (urlPos - lastPos) < retPortSize-1) {
 				*retPort++ = *urlPos++;
 			}
 		}
@@ -144,7 +144,7 @@ char WaitressSplitUrl (const char *url, char *retHost, size_t retHostSize,
 
 		/* path */
 		while (*urlPos != '\0' && *urlPos != '#' &&
-				urlPos - lastPos < retPathSize-1) {
+                       (size_t)(urlPos - lastPos) < retPathSize-1) {
 			*retPath++ = *urlPos++;
 		}
 	} else {
