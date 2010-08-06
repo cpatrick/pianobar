@@ -21,32 +21,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#ifndef _UI_H
-#define _UI_H
+#ifndef _MAIN_H
+#define _MAIN_H
 
 #include <piano.h>
 #include <waitress.h>
 
-#include "settings.h"
 #include "player.h"
+#include "settings.h"
 
-typedef enum {MSG_NONE, MSG_INFO, MSG_PLAYING, MSG_TIME, MSG_ERR,
-		MSG_QUESTION, MSG_LIST} uiMsg_t;
+typedef struct {
+	PianoHandle_t ph;
+	WaitressHandle_t waith;
+	struct audioPlayer player;
+	BarSettings_t settings;
+	/* first item is current song */
+	PianoSong_t *playlist;
+	PianoSong_t *songHistory;
+	PianoStation_t *curStation;
+	char doQuit;
+} BarApp_t;
 
-void BarUiMsg (uiMsg_t type, const char *format, ...);
-PianoReturn_t BarUiPrintPianoStatus (PianoReturn_t ret);
-PianoStation_t *BarUiSelectStation (PianoHandle_t *, const char *,
-		BarStationSorting_t, FILE *);
-PianoSong_t *BarUiSelectSong (PianoSong_t *startSong, FILE *curFd);
-PianoArtist_t *BarUiSelectArtist (PianoArtist_t *startArtist, FILE *curFd);
-char *BarUiSelectMusicId (PianoHandle_t *ph, WaitressHandle_t *, FILE *curFd, char *);
-void BarStationFromGenre (PianoHandle_t *ph, WaitressHandle_t *, FILE *curFd);
-void BarUiPrintStation (PianoStation_t *);
-void BarUiPrintSong (PianoSong_t *, PianoStation_t *);
-void BarUiStartEventCmd (const BarSettings_t *, const char *,
-		const PianoStation_t *, const PianoSong_t *, const struct audioPlayer *,
-		PianoReturn_t, WaitressReturn_t);
-int BarUiPianoCall (PianoHandle_t *, PianoRequestType_t, WaitressHandle_t *,
-		void *, PianoReturn_t *, WaitressReturn_t *);
+#endif /* _MAIN_H */
 
-#endif /* _UI_H */

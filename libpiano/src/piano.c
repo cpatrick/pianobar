@@ -135,8 +135,6 @@ void PianoDestroyPlaylist (PianoSong_t *playlist) {
 	while (curSong != NULL) {
 		PianoFree (curSong->audioUrl, 0);
 		PianoFree (curSong->artist, 0);
-		PianoFree (curSong->focusTraitId, 0);
-		PianoFree (curSong->matchingSeed, 0);
 		PianoFree (curSong->musicId, 0);
 		PianoFree (curSong->title, 0);
 		PianoFree (curSong->userSeed, 0);
@@ -147,6 +145,21 @@ void PianoDestroyPlaylist (PianoSong_t *playlist) {
 		lastSong = curSong;
 		curSong = curSong->next;
 		PianoFree (lastSong, sizeof (*lastSong));
+	}
+}
+
+/*	destroy genre linked list
+ */
+void PianoDestroyGenres (PianoGenre_t *genres) {
+	PianoGenre_t *curGenre, *lastGenre;
+
+	curGenre = genres;
+	while (curGenre != NULL) {
+		PianoFree (curGenre->name, 0);
+		PianoFree (curGenre->musicId, 0);
+		lastGenre = curGenre;
+		curGenre = curGenre->next;
+		PianoFree (lastGenre, sizeof (*lastGenre));
 	}
 }
 
@@ -163,7 +176,7 @@ void PianoDestroy (PianoHandle_t *ph) {
 	/* destroy genre stations */
 	PianoGenreCategory_t *curGenreCat = ph->genreStations, *lastGenreCat;
 	while (curGenreCat != NULL) {
-		PianoDestroyStations (curGenreCat->stations);
+		PianoDestroyGenres (curGenreCat->genres);
 		PianoFree (curGenreCat->name, 0);
 		lastGenreCat = curGenreCat;
 		curGenreCat = curGenreCat->next;
@@ -297,30 +310,37 @@ PianoReturn_t PianoRequest (PianoHandle_t *ph, PianoRequest_t *req,
 			snprintf (xmlSendBuf, sizeof (xmlSendBuf), "<?xml version=\"1.0\"?>"
 					"<methodCall><methodName>station.addFeedback</methodName>"
 					"<params><param><value><int>%lu</int></value></param>"
+					/* auth token */
 					"<param><value><string>%s</string></value></param>"
+					/* station id */
 					"<param><value><string>%s</string></value></param>"
+					/* music id */
 					"<param><value><string>%s</string></value></param>"
+					/* user seed */
 					"<param><value><string>%s</string></value></param>"
-					"<param><value><string>%s</string></value></param>"
-					"<param><value><string>%s</string></value></param>"
-					"<param><value></value></param>"
+					/* test strategy */
+					"<param><value>%u</value></param>"
+					/* positive */
 					"<param><value><boolean>%i</boolean></value></param>"
+					/* "is-creator-quickmix" */
 					"<param><value><boolean>0</boolean></value></param>"
+					/* song type */
+					"<param><value><int>%u</int></value></param>"
 					"</params></methodCall>", (unsigned long) time (NULL),
 					ph->user.authToken, reqData->stationId, reqData->musicId,
-					(reqData->matchingSeed == NULL) ? "" : reqData->matchingSeed,
 					(reqData->userSeed == NULL) ? "" : reqData->userSeed,
-					(reqData->focusTraitId == NULL) ? "" : reqData->focusTraitId,
-					(reqData->rating == PIANO_RATE_LOVE) ? 1 : 0);
+					reqData->testStrategy,
+					(reqData->rating == PIANO_RATE_LOVE) ? 1 : 0,
+					reqData->songType);
 			snprintf (req->urlPath, sizeof (req->urlPath), PIANO_RPC_PATH
 					"rid=%s&lid=%s&method=addFeedback&arg1=%s&arg2=%s"
-					"&arg3=%s&arg4=%s&arg5=%s&arg6=&arg7=%s&arg8=false",
+					"&arg3=%s&arg4=%u&arg5=%s&arg6=false&arg7=%u",
 					ph->routeId, ph->user.listenerId, reqData->stationId,
 					reqData->musicId,
-					(reqData->matchingSeed == NULL) ? "" : reqData->matchingSeed,
 					(reqData->userSeed == NULL) ? "" : reqData->userSeed,
-					(reqData->focusTraitId == NULL) ? "" : reqData->focusTraitId,
-					(reqData->rating == PIANO_RATE_LOVE) ? "true" : "false");
+					reqData->testStrategy,
+					(reqData->rating == PIANO_RATE_LOVE) ? "true" : "false",
+					reqData->songType);
 			break;
 		}
 
@@ -557,7 +577,7 @@ PianoReturn_t PianoRequest (PianoHandle_t *ph, PianoRequest_t *req,
 					ph->user.authToken, reqData->song->stationId,
 					reqData->song->musicId);
 			snprintf (req->urlPath, sizeof (req->urlPath), PIANO_RPC_PATH
-					"rid=%s&lid=%s&method=method=narrative&arg1=%s&arg2=%s",
+					"rid=%s&lid=%s&method=narrative&arg1=%s&arg2=%s",
 					ph->routeId, ph->user.listenerId, reqData->song->stationId,
 					reqData->song->musicId);
 			break;
@@ -580,7 +600,7 @@ PianoReturn_t PianoRequest (PianoHandle_t *ph, PianoRequest_t *req,
 					"</params></methodCall>", (unsigned long) time (NULL),
 					ph->user.authToken, reqData->musicId, reqData->max);
 			snprintf (req->urlPath, sizeof (req->urlPath), PIANO_RPC_PATH
-					"rid=%s&lid=%s&method=method=getSeedSuggestions&arg1=%s&arg2=%u",
+					"rid=%s&lid=%s&method=getSeedSuggestions&arg1=%s&arg2=%u",
 					ph->routeId, ph->user.listenerId, reqData->musicId, reqData->max);
 			break;
 		}
@@ -600,7 +620,7 @@ PianoReturn_t PianoRequest (PianoHandle_t *ph, PianoRequest_t *req,
 					"</params></methodCall>", (unsigned long) time (NULL),
 					ph->user.authToken, song->stationId, song->musicId);
 			snprintf (req->urlPath, sizeof (req->urlPath), PIANO_RPC_PATH
-					"rid=%s&lid=%s&method=method=createBookmark&arg1=%s&arg2=%s",
+					"rid=%s&lid=%s&method=createBookmark&arg1=%s&arg2=%s",
 					ph->routeId, ph->user.listenerId, song->stationId,
 					song->musicId);
 			break;
@@ -620,7 +640,7 @@ PianoReturn_t PianoRequest (PianoHandle_t *ph, PianoRequest_t *req,
 					"</params></methodCall>", (unsigned long) time (NULL),
 					ph->user.authToken, song->artistMusicId);
 			snprintf (req->urlPath, sizeof (req->urlPath), PIANO_RPC_PATH
-					"rid=%s&lid=%s&method=method=createArtistBookmark&arg1=%s",
+					"rid=%s&lid=%s&method=createArtistBookmark&arg1=%s",
 					ph->routeId, ph->user.listenerId, song->artistMusicId);
 			break;
 		}
@@ -638,10 +658,10 @@ PianoReturn_t PianoRequest (PianoHandle_t *ph, PianoRequest_t *req,
 			PianoRequestDataAddFeedback_t transformedReqData;
 			transformedReqData.stationId = reqData->song->stationId;
 			transformedReqData.musicId = reqData->song->musicId;
-			transformedReqData.matchingSeed = reqData->song->matchingSeed;
 			transformedReqData.userSeed = reqData->song->userSeed;
-			transformedReqData.focusTraitId = reqData->song->focusTraitId;
 			transformedReqData.rating = reqData->rating;
+			transformedReqData.testStrategy = reqData->song->testStrategy;
+			transformedReqData.songType = reqData->song->songType;
 			req->data = &transformedReqData;
 
 			/* create request data (url, post data) */
@@ -667,9 +687,9 @@ PianoReturn_t PianoRequest (PianoHandle_t *ph, PianoRequest_t *req,
 			assert (reqData->step < 2);
 
 			transformedReqData.musicId = reqData->song->musicId;
-			transformedReqData.matchingSeed = "";
 			transformedReqData.userSeed = "";
-			transformedReqData.focusTraitId = "";
+			transformedReqData.songType = reqData->song->songType;
+			transformedReqData.testStrategy = reqData->song->testStrategy;
 			req->data = &transformedReqData;
 
 			switch (reqData->step) {
