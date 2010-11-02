@@ -3,6 +3,7 @@
 
 /* package name */
 #define PACKAGE "${PACKAGE}"
+#define VERSION "${VERSION}"
 
 /* used libraries */
 #cmakedefine ENABLE_FAAD
