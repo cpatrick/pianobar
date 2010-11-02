@@ -60,8 +60,7 @@ int main (int argc, char **argv) {
 	char ctlPath[1024];
 	FILE *ctlFd = NULL;
 	struct timeval selectTimeout;
-	int maxFd;
-        int selectFds[2] = {0,0};
+	int maxFd, selectFds[2] = {-1, -1};
 	fd_set readSet, readSetCopy;
 	char buf = '\0';
 	/* terminal attributes _before_ we started messing around with ~ECHO */
@@ -85,7 +84,8 @@ int main (int argc, char **argv) {
 	BarSettingsInit (&app.settings);
 	BarSettingsRead (&app.settings);
 
-	BarUiMsg (MSG_NONE, "Welcome to " PACKAGE "! Press %c for a list of commands.\n",
+	BarUiMsg (MSG_NONE, "Welcome to " PACKAGE " (" VERSION ")! "
+			"Press %c for a list of commands.\n",
 			app.settings.keys[BAR_KS_HELP]);
 
 	/* init fds */
@@ -142,8 +142,8 @@ int main (int argc, char **argv) {
 		reqData.step = 0;
 		
 		BarUiMsg (MSG_INFO, "Login... ");
-		if (!BarUiPianoCall (&app.ph, PIANO_REQUEST_LOGIN, &app.waith,
-				&reqData, &pRet, &wRet)) {
+		if (!BarUiPianoCall (&app, PIANO_REQUEST_LOGIN, &reqData, &pRet,
+				&wRet)) {
 			BarTermRestore (&termOrig);
 			return 0;
 		}
@@ -154,8 +154,8 @@ int main (int argc, char **argv) {
 		WaitressReturn_t wRet;
 
 		BarUiMsg (MSG_INFO, "Get stations... ");
-		if (!BarUiPianoCall (&app.ph, PIANO_REQUEST_GET_STATIONS, &app.waith,
-				NULL, &pRet, &wRet)) {
+		if (!BarUiPianoCall (&app, PIANO_REQUEST_GET_STATIONS, NULL, &pRet,
+				&wRet)) {
 			BarTermRestore (&termOrig);
 			return 0;
 		}
@@ -243,8 +243,8 @@ int main (int argc, char **argv) {
 					reqData.format = app.settings.audioFormat;
 
 					BarUiMsg (MSG_INFO, "Receiving new playlist... ");
-					if (!BarUiPianoCall (&app.ph, PIANO_REQUEST_GET_PLAYLIST,
-							&app.waith, &reqData, &pRet, &wRet)) {
+					if (!BarUiPianoCall (&app, PIANO_REQUEST_GET_PLAYLIST,
+							&reqData, &pRet, &wRet)) {
 						app.curStation = NULL;
 					} else {
 						app.playlist = reqData.retPlaylist;
@@ -313,7 +313,7 @@ int main (int argc, char **argv) {
 
 			if (FD_ISSET(selectFds[0], &readSetCopy)) {
 				curFd = stdin;
-			} else if (FD_ISSET(selectFds[1], &readSetCopy)) {
+			} else if (selectFds[1] != -1 && FD_ISSET(selectFds[1], &readSetCopy)) {
 				curFd = ctlFd;
 			}
 			buf = fgetc (curFd);
